@@ -48,7 +48,7 @@ export default function NewNavBar() {
       >
         <div className="flex items-center gap-2 shrink-0">
           <span className="font-bold text-xl tracking-tight">
-            <span className="text-[#111]">bl</span><span className="text-[#111]">a</span><span className="text-[#111]">ke</span>
+            <span className="text-[#111]">craftai</span>
           </span>
         </div>
         <div className="hidden md:flex items-center gap-6 lg:gap-8 text-sm text-[#444] overflow-x-auto mx-2 lg:mx-4">
