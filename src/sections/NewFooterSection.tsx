@@ -4,7 +4,7 @@ export default function NewFooterSection() {
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <span className="font-bold text-base tracking-tight">
-            <span className="text-[#111]">bl</span><span className="text-[#111]">a</span><span className="text-[#111]">ke</span>
+            <span className="text-[#111]">craftai</span>
           </span>
           <span className="text-[#888] text-xs">&copy; 2025</span>
         </div>
