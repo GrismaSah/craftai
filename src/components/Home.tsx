@@ -1,9 +1,10 @@
-import NewNavBar from '../sections/NewNavBar';
-import NewHeroSection from '../sections/NewHeroSection';
-import NewFeaturesSection from '../sections/NewFeaturesSection';
-import NewTestimonialsSection from '../sections/NewTestimonialsSection';
-import NewPricingSection from '../sections/NewPricingSection';
-import NewFooterSection from '../sections/NewFooterSection';
+import NewNavBar from '@/sections/NewNavBar';
+import NewHeroSection from '@/sections/NewHeroSection';
+import NewFeaturesSection from '@/sections/NewFeaturesSection';
+import NewHowItWorks from '@/sections/NewHowItWorks';
+import NewTestimonialsSection from '@/sections/NewTestimonialsSection';
+import NewPricingSection from '@/sections/NewPricingSection';
+import NewFooterSection from '@/sections/NewFooterSection';
 import { TrustedBy } from '@/components/TrustedBy';
 
 export default function Home() {
@@ -18,9 +19,8 @@ export default function Home() {
         <NewHeroSection />
       </div>
       <NewFeaturesSection />
-      {/* <NewTrustedBySection /> */}
-
-      <TrustedBy/>
+      <NewHowItWorks />
+      <TrustedBy />
       <NewTestimonialsSection />
       <NewPricingSection />
       <NewFooterSection />

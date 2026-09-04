@@ -2,14 +2,18 @@
 
 import { FileItem } from "@/types/types";
 import { ChevronRight, File, Folder } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 interface FileExplorerProps {
   files: FileItem[];
   onFileSelect: (file: FileItem) => void;
 }
 
-function FileNode({
+/**
+ * Memoized so a streaming generation stays cheap: the tree reducer shares untouched
+ * subtrees by reference, so only nodes on the changed path actually re-render.
+ */
+const FileNode = memo(function FileNode({
   file,
   onFileSelect,
   level = 0,
@@ -60,7 +64,7 @@ function FileNode({
       )}
     </div>
   );
-}
+});
 
 export function FileExplorer({ files, onFileSelect }: FileExplorerProps) {
   return (
