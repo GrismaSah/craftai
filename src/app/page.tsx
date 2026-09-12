@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Home from "@/pages/home";
+import Home from "@/components/Home";
 
 export default function Page() {
   useEffect(() => {

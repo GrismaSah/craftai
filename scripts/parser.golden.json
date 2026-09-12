@@ -1,0 +1,72 @@
+{
+  "capturedAt": "2026-09-04T04:36:23.527Z",
+  "note": "Golden baseline captured BEFORE the type=diff parser changes. Full-file parsing must stay byte-identical.",
+  "truncated": false,
+  "files": [
+    {
+      "path": "eslint.config.js",
+      "bytes": 738,
+      "sha256": "42f28c68c3365bc28e8409a23424cf1cb59f380354707c8eac2876f6b6d7e8bf"
+    },
+    {
+      "path": "index.html",
+      "bytes": 365,
+      "sha256": "c7424cab79ba366bb2d8fca14db7d1caf8f2ae42217f4ddc3642bb2edc8ac6eb"
+    },
+    {
+      "path": "package.json",
+      "bytes": 809,
+      "sha256": "0c37d984a0e0fa29713d02d57354207cd9287692f13262c9f5f80ddb1a251a69"
+    },
+    {
+      "path": "postcss.config.js",
+      "bytes": 80,
+      "sha256": "33e39ff2f29058a01e7d550bd1e78d74ad2bfdbaa2c4a4a09af48f5d63a4744b"
+    },
+    {
+      "path": "tailwind.config.js",
+      "bytes": 169,
+      "sha256": "0dc1f27068bf31db44fedae7a15fa2ffeadb66e92e92b74a0c727feb3843ecf0"
+    },
+    {
+      "path": "tsconfig.app.json",
+      "bytes": 551,
+      "sha256": "8badab7e156943d717e05adf5dff1265eb931330f4e79bfff476ce020bf25faf"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 118,
+      "sha256": "289ff3248b2fa8fb30f55d6d1d2f56cae214337566846c4c7c4681134fb9674b"
+    },
+    {
+      "path": "tsconfig.node.json",
+      "bytes": 478,
+      "sha256": "c0ceab8a018f7d00452e2484d06b0714aefaf091271bbd37f4f74d317e30762c"
+    },
+    {
+      "path": "vite.config.ts",
+      "bytes": 219,
+      "sha256": "c3557cefcd71a60913769380787d7777829a30d89ac572aaa0081410c173721f"
+    },
+    {
+      "path": "src/App.tsx",
+      "bytes": 239,
+      "sha256": "d0e963e51d474f448e0a42ca610b63574b7b8414f7129d00ed01d2a6715a39ca"
+    },
+    {
+      "path": "src/index.css",
+      "bytes": 58,
+      "sha256": "186419c47e46d1688974fe6d1d4688d7234f1790113a0c1e933526b522c9a04c"
+    },
+    {
+      "path": "src/main.tsx",
+      "bytes": 233,
+      "sha256": "f9edb995863d2424de5e17d57fae922666e3be0f47dcc0768260371212982eb8"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "bytes": 37,
+      "sha256": "b440b802c2cfeac6a24eda510bd63c1f23c6ab5c52bcfe3a32a918dbad6b46c8"
+    }
+  ]
+}
