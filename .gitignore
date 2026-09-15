@@ -42,3 +42,6 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# private interview prep notes — never commit/push
+CRAFTAI_INTERVIEW_PREP.md
