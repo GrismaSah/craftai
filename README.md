@@ -5,9 +5,48 @@ Turn your ideas into websites. CraftAI is an AI-powered website builder that gen
 
 ## Architecture
 
-CraftAI uses a three-stage pipeline to go from prompt to live preview:
+CraftAI goes from prompt to live preview in three stages: classify, generate, render.
 
-<img width="1056" height="680" alt="image" src="https://github.com/user-attachments/assets/a60e9d9e-3919-4270-a401-1225bea28e9a" />
+```mermaid
+flowchart LR
+    subgraph Landing
+        A["/ — prompt input"]
+    end
+
+    subgraph Builder["/builder"]
+        T["POST /api/template<br/>classify: chat · react · node"]
+        S["Starter scaffold<br/>seeded into the file tree"]
+        C["POST /api/chat<br/>streams the generation"]
+        P["artifactParser.ts<br/>incremental &lt;boltArtifact&gt; scanner"]
+        F["fileTree.ts<br/>pure immutable tree reducer"]
+        U["useArtifactStream<br/>batches updates ~every 50ms"]
+    end
+
+    subgraph Panes
+        Chat["ChatPanel"]
+        Code["CodeEditor (Monaco)"]
+        Preview["PreviewFrame (WebContainer)"]
+    end
+
+    A -->|prompt| T
+    T -->|react or node| S
+    T -->|chat| C
+    S --> C
+    C -->|raw text stream| P
+    P -->|ArtifactEvent| F
+    F --> U
+    U --> Chat
+    U --> Code
+    U --> Preview
+```
+
+Both API routes are stateless — the client (`src/app/builder/page.tsx`) owns all
+conversation history and resends it each turn, trimmed to fit the model's
+per-minute token budget (`src/lib/chatStream.ts`). There is no database: the
+project, chat history and file tree live in React state, snapshotted to
+`localStorage` (`src/lib/builderPersistence.ts`) so a refresh of `/builder`
+resumes the same project instead of losing it — one project at a time, scoped
+to a single browser tab, not a substitute for real server-side persistence.
 
 
 ## Setup
@@ -163,6 +202,22 @@ curl -X POST http://localhost:3000/api/template \
   -d '{"prompt":"a REST API for a todo list"}'
 ```
 
+### Rate limits
+
+Both routes check a local, in-process limiter (`src/lib/rateLimit.ts`) before
+touching Groq at all, so a refusal here costs nothing upstream:
+
+| Route | Limit |
+| --- | --- |
+| `POST /api/chat` | 6 requests/minute, 40/hour |
+| `POST /api/template` | 20 requests/minute |
+
+A refusal is `429 too_many_requests` with a `Retry-After` header. This is a
+per-process counter keyed on `X-Forwarded-For`/`X-Real-IP` — a speed bump
+against casual abuse behind a trusted proxy, not real access control (either
+header is client-supplied and trivially spoofed without one). See the file's
+own comments for the honest limits of that.
+
 ### Errors
 
 Errors are JSON with a stable machine-readable `error` code. The shared codes and
@@ -171,14 +226,17 @@ their statuses live in `src/lib/ai/groq.ts`:
 | Status | Body | Meaning |
 | --- | --- | --- |
 | 400 | `{ "error": "invalid_body", "message": "..." }` | The request body was not valid JSON, or failed validation. |
-| 413 | `{ "error": "payload_too_large", "message": "..." }` | The conversation exceeded the character cap. Start a new build. |
-| 429 | `{ "error": "quota_exceeded", "message": "..." }` | Groq rate limit or credits exhausted. The builder surfaces this as a modal. |
+| 413 | `{ "error": "payload_too_large", "message": "..." }` | The request itself exceeded the route's own character cap (200,000 for `/api/chat`, 8,000 for `/api/template`) — rejected before Groq is ever called. |
+| 413 | `{ "error": "request_too_large", "message": "..." }` | `/api/chat` only. The request passed our cap but Groq rejected it anyway: prompt + completion exceeds the account's tokens-per-minute allowance. |
+| 429 | `{ "error": "too_many_requests", "message": "..." }` | The local rate limiter above refused the request. Has a `Retry-After` header. |
+| 429 | `{ "error": "quota_exceeded", "message": "..." }` | Groq's own rate limit or credits are exhausted. The builder surfaces this as a modal. |
+| 502 | `{ "error": "upstream_rejected", "message": "..." }` | The server sent Groq a malformed request — a server-side bug, not something retrying fixes. |
 | 500 | `{ "error": "internal_error" }` | Unexpected failure. Upstream detail is logged server-side only, never returned. |
 | 503 | `{ "error": "missing_api_key", "message": "..." }` | `GROQ_API_KEY` is unset or empty. |
 
-`413` is specific to `/api/chat`. Errors raised after a stream has started are
-delivered as the `<craftaiError>` sentinel described above rather than as a
-status code.
+Errors raised after a stream has started are delivered as the
+`<craftaiError>` sentinel described above rather than as a status code — by
+then the HTTP status is already committed to `200`.
 
 
 ## Scripts
@@ -197,6 +255,10 @@ pnpm typecheck  # tsc --noEmit
 **`GROQ_API_KEY is not set` / 503 `missing_api_key`**
 `.env.local` is missing, or holds a placeholder instead of a real key. Add the
 key and restart the dev server — env files are read only at startup.
+
+**429 `too_many_requests`**
+You've hit CraftAI's own local rate limit, not Groq's. Wait for the window in
+the `Retry-After` header (or see the table above) and retry.
 
 **429 `quota_exceeded`**
 You have hit Groq's rate limit or exhausted your credits. Wait and retry, or
