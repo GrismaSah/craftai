@@ -54,6 +54,12 @@ export interface ArtifactStreamState {
   setStreaming: (value: boolean) => void;
   setTruncated: (value: boolean) => void;
   reset: () => void;
+  /**
+   * Replaces the tree wholesale with an already-complete set of files — a
+   * restored snapshot, not a live event stream. Bypasses the coalescing queue
+   * entirely, same as `reset`, since there is nothing to batch.
+   */
+  hydrate: (files: FileItem[]) => void;
 }
 
 export function useArtifactStream(): ArtifactStreamState {
@@ -156,6 +162,11 @@ export function useArtifactStream(): ArtifactStreamState {
     setTruncated(false);
   }, []);
 
+  const hydrate = useCallback((next: FileItem[]) => {
+    treeRef.current = next;
+    setFiles(next);
+  }, []);
+
   // A generation that ends with events still queued must not leave them stranded.
   useEffect(() => {
     if (streaming || timer.current === null) return;
@@ -175,5 +186,6 @@ export function useArtifactStream(): ArtifactStreamState {
     setStreaming,
     setTruncated,
     reset,
+    hydrate,
   };
 }

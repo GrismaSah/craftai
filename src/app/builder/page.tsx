@@ -31,6 +31,7 @@ import type { ArtifactEvent } from "@/lib/artifactParser";
 import { useWebContainer } from "@/hooks/useWebContainer";
 import { Loader } from "@/components/Builder/Loader";
 import { QuotaErrorModal } from "@/components/Builder/QuotaErrorModal";
+import { loadBuilderSnapshot, saveBuilderSnapshot } from "@/lib/builderPersistence";
 import { downloadProjectAsZip } from "@/lib/downloadZip";
 import { ArrowLeft, Download, Send, Mic, TriangleAlert } from "lucide-react";
 import Link from "next/link";
@@ -198,6 +199,7 @@ function BuilderContent() {
     writeFile,
     setStreaming,
     setTruncated,
+    hydrate,
   } = useArtifactStream();
 
   /**
@@ -541,8 +543,30 @@ function BuilderContent() {
   // Kicks off the generation pipeline — an external system, not derived state. The
   // deferral keeps the first setState out of this effect's own render pass, and the
   // controller means navigating away actually stops the stream instead of billing on.
+  //
+  // A refresh remounts this component from scratch with the same `?prompt=`, so
+  // without this check it would silently re-run the whole generation and bill a
+  // second Groq call for a project that already exists. A saved snapshot for the
+  // exact same prompt means "resume", not "regenerate".
   useEffect(() => {
     if (!bootPrompt) return;
+
+    const snapshot = loadBuilderSnapshot(bootPrompt);
+    if (snapshot) {
+      // Same deferral as the `init()` call below, and for the same reason: keep
+      // this effect's own render pass free of the setState calls it triggers.
+      const id = setTimeout(() => {
+        hydrate(snapshot.files);
+        setChatTurns(snapshot.chatTurns);
+        setLlmMessages(snapshot.llmMessages);
+        setContextMessages(snapshot.contextMessages);
+        setTemplateType(snapshot.templateType);
+        setActiveTab(snapshot.files.length > 0 ? "code" : "chat");
+        setReady(true);
+      }, 0);
+      return () => clearTimeout(id);
+    }
+
     const controller = new AbortController();
     const id = setTimeout(() => void init(bootPrompt, controller.signal), 0);
     return () => {
@@ -551,6 +575,30 @@ function BuilderContent() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Saves after each turn settles, not on every streaming batch — a snapshot mid
+  // generation would restore a half-written file tree, and there is no reason to
+  // pay a localStorage write ~20x/sec while tokens are still arriving.
+  useEffect(() => {
+    if (!ready || !bootPrompt || streaming) return;
+    saveBuilderSnapshot({
+      prompt: bootPrompt,
+      files,
+      chatTurns,
+      llmMessages,
+      contextMessages,
+      templateType,
+    });
+  }, [
+    ready,
+    bootPrompt,
+    streaming,
+    files,
+    chatTurns,
+    llmMessages,
+    contextMessages,
+    templateType,
+  ]);
 
   const handleSend = useCallback(async () => {
     const trimmed = userPrompt.trim();
