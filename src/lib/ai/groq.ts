@@ -21,9 +21,10 @@ export interface ModelConfig {
  * account. Do not swap these for ids copied from Groq's public docs — this
  * account does not have access to the whole catalogue.
  *
- * - `groq/compound-mini`   agentic model with server-side tool use, 70,000 TPM /
- *   250 requests per day on this account. Used for artifact generation. It is
- *   NOT a `reasoning_format` model; passing the option is a hard 400.
+ * - `openai/gpt-oss-120b`  used for artifact generation. `groq/compound-mini`
+ *   was tried first — its advertised 70,000 TPM belongs to the wrapper, not
+ *   the inner model, which still carries the account's own 8,000 TPM free-tier
+ *   limit (see HANDOVER.md §4.1) — so it was reverted in favor of this model.
  * - `qwen/qwen3.8-27b`     context 131,042 / max completion 16,384. Cheap and
  *   fast; used only for the chat|react|node classification. A reasoning model,
  *   so its chain-of-thought must be suppressed or it corrupts the parsed output.
